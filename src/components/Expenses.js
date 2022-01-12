@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
 import { expenses } from '../actions';
 
 class Expenses extends Component {
@@ -27,6 +28,7 @@ class Expenses extends Component {
 
   render() {
     const { value, currency, tag, method, description } = this.state;
+    const { saveExpenses } = this.props;
     return (
       <form className="expenses">
         <label htmlFor="value">
@@ -118,5 +120,9 @@ class Expenses extends Component {
 const mapDispatchToProps = (dispatch) => ({
   saveExpenses: (payload) => dispatch(expenses(payload)),
 });
+
+Expenses.propTypes = {
+  saveExpenses: PropTypes.func.isRequired,
+};
 
 export default connect(null, mapDispatchToProps)(Expenses);
