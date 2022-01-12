@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
+import PropTypes from 'prop-types';
+import { login } from '../actions';
 
 class Login extends React.Component {
   constructor(props) {
@@ -10,19 +11,13 @@ class Login extends React.Component {
         email: '',
         password: '',
       },
-      isDisabled: true,
     };
     this.handleChange = this.handleChange.bind(this);
-    this.handleButton = this.handleButton.bind(this);
-    this.validateLogin = this.validateLogin.bind(this);
-  }
-
-  handleButton(value) {
-    const minLength = 6;
-    this.setState({ isDisabled: value.length < minLength });
+    // this.verify = this.verify.bind(this);
   }
 
   handleChange({ target }) {
+    // console.log(target);
     const { value, name } = target;
     const { user } = this.state;
     this.setState({
@@ -31,11 +26,27 @@ class Login extends React.Component {
         [name]: value,
       },
     });
-    this.handleButton(value);
   }
 
+  // https://www.w3resource.com/javascript/form/email-validation.php
+  // verify() {
+  //   const { user } = this.state;
+  //   const { email, password } = user;
+  //   const minLength = 6;
+  //   // const format = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+  //   // user.email.match(format)
+  //   if (password.length >= minLength
+  //     && email.includes('@')
+  //     && email.includes('.com')) {
+  //     return false;
+  //   }
+  // }
+
   render() {
-    const { user, isDisabled } = this.state;
+    const minLength = 6;
+    const { user } = this.state;
+    const { email, password } = user;
+    const { history, userLogin } = this.props;
     return (
       <div className="login">
         <h3 className="text-center">Login</h3>
@@ -44,6 +55,7 @@ class Login extends React.Component {
             type="email"
             placeholder="E-mail"
             data-testid="email-input"
+            name="email"
             value={ email }
             onChange={ this.handleChange }
             required
@@ -53,26 +65,40 @@ class Login extends React.Component {
             placeholder="Senha"
             data-testid="password-input"
             minLength="6"
+            name="password"
             value={ password }
             onChange={ this.handleChange }
             required
           />
         </section>
         <div className="link">
-          <Link to="/carteira">
+          <button
+            type="button"
+            disabled={ !(password.length >= minLength
+              && email.includes('@')
+              && email.includes('.com')) }
+            onClick={ () => {
+              userLogin(user);
+              history.push('/carteira');
+            } }
+          >
             Entrar
-            {/* <button
-              type="button"
-              disabled={ isDisabled }
-              onClick={ () => login({ user }) }
-            />
-              Entrar
-            </button> */}
-          </Link>
+          </button>
         </div>
       </div>
     );
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Login);
+const mapDispatchToProps = (dispatch) => ({
+  userLogin: (payload) => dispatch(login(payload)),
+});
+
+Login.propTypes = {
+  history: PropTypes.shape({
+    push: PropTypes.func.isRequired,
+  }).isRequired,
+  userLogin: PropTypes.func.isRequired,
+};
+
+export default connect(null, mapDispatchToProps)(Login);
