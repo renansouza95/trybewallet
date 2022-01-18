@@ -1,21 +1,30 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { expenses } from '../actions';
+import { expenses, currenciesArray, getCurrencyThunk } from '../actions';
+import getCurrencyAPI from '../services/fetchapi';
 
 class Expenses extends Component {
   constructor(props) {
     super(props);
     this.state = {
       id: 0,
-      value: '',
+      value: 0,
       currency: '',
       tag: '',
       method: '',
       description: '',
-      exchangeRates: {},
     };
     this.handleChange = this.handleChange.bind(this);
+    this.handleClick = this.handleClick.bind(this);
+  }
+
+  async componentDidMount() {
+    const { saveCurrencies } = this.props;
+    const response = await getCurrencyAPI();
+    const coinArray = Object.keys(response).map((coin) => coin);
+    const filterMyArray = coinArray.filter((coin) => coin !== 'USDT');
+    saveCurrencies(filterMyArray);
   }
 
   handleChange({ target }) {
@@ -26,9 +35,20 @@ class Expenses extends Component {
     }));
   }
 
+  // Contador utilizando prevState => https://stackoverflow.com/questions/55495198/reacts-setstate-method-with-prevstate-argument/55496277
+  handleClick() {
+    const { saveExpenses, saveExchangeRate } = this.props;
+    saveExchangeRate();
+    // this.setState({
+    //   exchangeRates: response,
+    // });
+    saveExpenses(this.state);
+    this.setState({ value: 0 });
+  }
+
   render() {
     const { value, currency, tag, method, description } = this.state;
-    const { saveExpenses } = this.props;
+    const { getCurrencies } = this.props;
     return (
       <form className="expenses">
         <label htmlFor="value">
@@ -45,53 +65,48 @@ class Expenses extends Component {
           Moeda
           <select
             name="currency"
+            id="currency"
             value={ currency }
             data-testid="currency-input"
             onChange={ this.handleChange }
           >
-            <option value="USD">USD</option>
-            <option value="CAD">CAD</option>
-            <option value="GBP">GBP</option>
-            <option value="ARS">ARS</option>
-            <option value="BTC">BTC</option>
-            <option value="LTC">LTC</option>
-            <option value="EUR">EUR</option>
-            <option value="JPY">JPY</option>
-            <option value="CHF">CHF</option>
-            <option value="AUD">AUD</option>
-            <option value="CNY">CNY</option>
-            <option value="ILS">ILS</option>
-            <option value="ETH">ETH</option>
-            <option value="XRP">XRP</option>
-            <option value="DOGE">DOGE</option>
+            {getCurrencies.map((coin, index) => (
+              <option
+                key={ index }
+                value={ coin }
+              >
+                { coin }
+              </option>))}
           </select>
         </label>
         <label htmlFor="tag">
           Tag
           <select
             name="tag"
+            id="tag"
             value={ tag }
             data-testid="tag-input"
             onChange={ this.handleChange }
           >
-            <option value="alimentacao">Alimentação</option>
-            <option value="lazer">Lazer</option>
-            <option value="trabalho">Trabalho</option>
-            <option value="transporte">Transporte</option>
-            <option value="saude">Saúde</option>
+            <option value="Alimentação">Alimentação</option>
+            <option value="Lazer">Lazer</option>
+            <option value="Trabalho">Trabalho</option>
+            <option value="Transporte">Transporte</option>
+            <option value="Saúde">Saúde</option>
           </select>
         </label>
         <label htmlFor="method">
           Método
           <select
             name="method"
+            id="method"
             value={ method }
             data-testid="method-input"
             onChange={ this.handleChange }
           >
-            <option value="dinheiro">Dinheiro</option>
-            <option value="credito">Cartão de crédito</option>
-            <option value="debito">Cartão de débito</option>
+            <option value="Dinheiro">Dinheiro</option>
+            <option value="Cartão de crédito">Cartão de crédito</option>
+            <option value="Cartão de débito">Cartão de débito</option>
           </select>
         </label>
         <label htmlFor="description">
@@ -106,9 +121,7 @@ class Expenses extends Component {
         </label>
         <button
           type="button"
-          onClick={ () => {
-            saveExpenses(this.state);
-          } }
+          onClick={ this.handleClick }
         >
           Adicionar despesa
         </button>
@@ -117,12 +130,21 @@ class Expenses extends Component {
   }
 }
 
+const mapStateToProps = (state) => ({
+  getCurrencies: state.wallet.currencies,
+});
+
 const mapDispatchToProps = (dispatch) => ({
   saveExpenses: (payload) => dispatch(expenses(payload)),
+  saveCurrencies: (payload) => dispatch(currenciesArray(payload)),
+  saveExchangeRate: (payload) => dispatch(getCurrencyThunk(payload)),
 });
 
 Expenses.propTypes = {
+  getCurrencies: PropTypes.func.isRequired,
   saveExpenses: PropTypes.func.isRequired,
+  saveCurrencies: PropTypes.func.isRequired,
+  saveExchangeRate: PropTypes.func.isRequired,
 };
 
-export default connect(null, mapDispatchToProps)(Expenses);
+export default connect(mapStateToProps, mapDispatchToProps)(Expenses);
