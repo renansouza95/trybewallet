@@ -1,7 +1,5 @@
 // Esse reducer será responsável por tratar o todas as informações relacionadas as despesas
-import { ADD_EXPENSE,
-  FETCH_CURRENCIES,
-  GET_EXCHANGE_SUCCESS } from '../actions';
+import { FETCH_CURRENCIES, ADD_EXPENSE, GET_CURRENCY_FAIL } from '../actions';
 
 const INITIAL_STATE = {
   expenses: [],
@@ -21,11 +19,10 @@ const wallet = (state = INITIAL_STATE, action) => {
       ...state,
       expenses: [...state.expenses, action.payload],
     };
-  case GET_EXCHANGE_SUCCESS:
-    console.log(action);
+  case GET_CURRENCY_FAIL:
     return {
       ...state,
-      expenses: [...state.expenses, action.payload],
+      error: 'DEU RUIM NA API',
     };
   default:
     return state;

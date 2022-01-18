@@ -14,6 +14,7 @@ class Expenses extends Component {
       tag: '',
       method: '',
       description: '',
+      exchangeRates: {},
     };
     this.handleChange = this.handleChange.bind(this);
     this.handleClick = this.handleClick.bind(this);
@@ -35,14 +36,10 @@ class Expenses extends Component {
     }));
   }
 
-  // Contador utilizando prevState => https://stackoverflow.com/questions/55495198/reacts-setstate-method-with-prevstate-argument/55496277
   handleClick() {
     const { saveExpenses, saveExchangeRate } = this.props;
-    saveExchangeRate();
-    // this.setState({
-    //   exchangeRates: response,
-    // });
     saveExpenses(this.state);
+    saveExchangeRate();
     this.setState({ value: 0 });
   }
 

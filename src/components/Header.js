@@ -3,8 +3,27 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
 class Header extends Component {
+  constructor(props) {
+    super(props);
+    this.somarExpenses = this.somarExpenses.bind(this);
+  }
+
+  // Feito com ajuda do Procópio na monitoria de projeto
+  // https://developer.mozilla.org/pt-BR/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce
+  // ParseFloat para transformar string em number
+  // Utilizei element.currency para pegar a moeda utilizada no input e a propriedade 'ask' do retorno da API para calcular o cambio da moeda
+  somarExpenses() {
+    const { expenses } = this.props;
+    const somatoria = expenses.reduce((acc, element) => {
+      const inputValue = parseFloat(element.value);
+      const cambioMoeda = parseFloat(element.exchangeRates[element.currency].ask);
+      return (inputValue * cambioMoeda) + acc;
+    }, 0);
+    return somatoria;
+  }
+
   render() {
-    const { email, expenses } = this.props;
+    const { email } = this.props;
     return (
       <header>
         <h1>TrybeWallet</h1>
@@ -15,7 +34,7 @@ class Header extends Component {
           </span>
           <span data-testid="total-field">
             Despesa total:
-            { expenses.value }
+            { this.somarExpenses() }
           </span>
           <span data-testid="header-currency-field">
             BRL
