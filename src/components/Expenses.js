@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { expenses, currenciesArray, getCurrencyThunk } from '../actions';
+import { saveExpenses, getCurrencyThunk } from '../actions';
 import getCurrencyAPI from '../services/fetchapi';
 
 class Expenses extends Component {
@@ -9,23 +9,28 @@ class Expenses extends Component {
     super(props);
     this.state = {
       id: 0,
-      value: 0,
-      currency: '',
-      tag: '',
-      method: '',
+      value: '',
+      currency: 'USD',
+      tag: 'Alimentação',
+      method: 'Dinheiro',
       description: '',
       exchangeRates: {},
     };
     this.handleChange = this.handleChange.bind(this);
     this.handleClick = this.handleClick.bind(this);
+    this.mapCurrencies = this.mapCurrencies.bind(this);
   }
 
-  async componentDidMount() {
+  componentDidMount() {
     const { saveCurrencies } = this.props;
-    const response = await getCurrencyAPI();
-    const coinArray = Object.keys(response).map((coin) => coin);
-    const filterMyArray = coinArray.filter((coin) => coin !== 'USDT');
-    saveCurrencies(filterMyArray);
+    saveCurrencies();
+  }
+
+  mapCurrencies() {
+    const { getCurrencies } = this.props;
+    const coinArray = Object.keys(getCurrencies).map((coin) => coin);
+    const filteredArray = coinArray.filter((coin) => coin !== 'USDT');
+    return filteredArray;
   }
 
   handleChange({ target }) {
@@ -36,16 +41,21 @@ class Expenses extends Component {
     }));
   }
 
-  handleClick() {
-    const { saveExpenses, saveExchangeRate } = this.props;
-    saveExpenses(this.state);
-    saveExchangeRate();
-    this.setState({ value: 0 });
+  // Fiz sem o Thunk
+  // Não consegui utilizar o this.setState antes de chamar addExpenses por causa da assincronicidade da atualizacao do estado React
+  async handleClick() {
+    const { addExpenses } = this.props;
+    const response = await getCurrencyAPI();
+    addExpenses({ ...this.state, exchangeRates: response });
+    this.setState((prevState) => ({
+      id: prevState.id + 1,
+      value: '',
+      description: '',
+    }));
   }
 
   render() {
     const { value, currency, tag, method, description } = this.state;
-    const { getCurrencies } = this.props;
     return (
       <form className="expenses">
         <label htmlFor="value">
@@ -67,10 +77,11 @@ class Expenses extends Component {
             data-testid="currency-input"
             onChange={ this.handleChange }
           >
-            {getCurrencies.map((coin, index) => (
+            {this.mapCurrencies().map((coin, index) => (
               <option
                 key={ index }
                 value={ coin }
+                id="currency"
               >
                 { coin }
               </option>))}
@@ -132,16 +143,16 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  saveExpenses: (payload) => dispatch(expenses(payload)),
-  saveCurrencies: (payload) => dispatch(currenciesArray(payload)),
-  saveExchangeRate: (payload) => dispatch(getCurrencyThunk(payload)),
+  addExpenses: (payload) => dispatch(saveExpenses(payload)),
+  saveCurrencies: () => dispatch(getCurrencyThunk()),
+  // saveExchange: () => dispatch(saveExchangeThunk()),
 });
 
 Expenses.propTypes = {
   getCurrencies: PropTypes.func.isRequired,
-  saveExpenses: PropTypes.func.isRequired,
+  addExpenses: PropTypes.func.isRequired,
   saveCurrencies: PropTypes.func.isRequired,
-  saveExchangeRate: PropTypes.func.isRequired,
+  // saveExchange: PropTypes.func.isRequired,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Expenses);
