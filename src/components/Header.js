@@ -19,7 +19,7 @@ class Header extends Component {
       const cambioMoeda = parseFloat(element.exchangeRates[element.currency].ask);
       return (inputValue * cambioMoeda) + acc;
     }, 0);
-    return somatoria;
+    return Number(somatoria).toFixed(2);
   }
 
   render() {
