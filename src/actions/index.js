@@ -3,12 +3,14 @@ import getCurrencyAPI from '../services/fetchapi';
 // Action Type
 export const LOGIN = 'LOGIN';
 export const ADD_EXPENSE = 'ADD_EXPENSE';
+export const DELETE_EXPENSE = 'DELETE_EXPENSE';
 export const FETCH_CURRENCIES = 'FETCH_CURRENCIES';
 export const GET_CURRENCY_FAIL = 'GET_CURRENCY_FAIL';
 
 // Action Creator
 export const login = (payload) => ({ type: LOGIN, payload });
 export const saveExpenses = (payload) => ({ type: ADD_EXPENSE, payload });
+export const deleteExpense = (payload) => ({ type: DELETE_EXPENSE, payload });
 export const currenciesArray = (payload) => ({ type: FETCH_CURRENCIES, payload });
 export const getExchangeFail = () => ({ type: GET_CURRENCY_FAIL });
 
